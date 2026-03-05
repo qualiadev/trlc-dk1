@@ -106,14 +106,13 @@ lerobot-record \
 ```
 </details>
 
-## URDF (v0.2)
+## URDF
 
 <p align="center">
-    <img src="https://github.com/andreaskoepf/trlc-dk1-follower-urdf/blob/main/assets/dk1_vsual_right.png">
+    <img src="media/follower_urdf.png">
 </p>
 
-A high-quality URDF file was developed by community member Andreas Köpf:
-[andreaskoepf/trlc-dk1-follower-urdf](https://github.com/andreaskoepf/trlc-dk1-follower-urdf)
+The follower arm URDF with visual (GLB) and collision (STL) meshes is available in [`urdf/follower/`](urdf/follower/).
 
 ## Acknowledgements
 
