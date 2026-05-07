@@ -242,9 +242,18 @@ class DK1Follower(Robot):
         return obs
 
     def _get_observation_pos_vel(self) -> dict[str, Any]:
+        # Pipelined batched read: send all motor refresh requests back-to-back,
+        # then drain replies. This is ~7x faster than looping refresh_motor_status
+        # per motor on USB-CDC <-> CAN bridges where each non-blocking recv()
+        # round-trips serially. See motors/DM_Control_Python/DM_CAN.py.
+        n_seen = self._control.pipelined_refresh(self._motors.values())
+        if n_seen != len(self._motors):
+            logger.warning(
+                f"{self} pipelined_refresh: only {n_seen}/{len(self._motors)} motors replied within timeout."
+            )
+
         obs: dict[str, Any] = {}
         for key, motor in self._motors.items():
-            self._control.refresh_motor_status(motor)
             if key == "gripper":
                 obs[f"{key}.pos"] = _map_range(
                     motor.getPosition(),

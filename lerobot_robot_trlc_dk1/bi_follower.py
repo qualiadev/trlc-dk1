@@ -14,6 +14,7 @@
 
 from dataclasses import dataclass, field
 from functools import cached_property
+from threading import Thread
 import time
 import logging
 from typing import Any
@@ -117,13 +118,33 @@ class BiDK1Follower(Robot):
         self.right_arm.configure()
 
     def get_observation(self) -> dict[str, Any]:
-        obs_dict = {}
-        
-        left_obs = self.left_arm.get_observation()
-        obs_dict.update({f"left_{key}": value for key, value in left_obs.items()})
+        # Left and right arms live on separate serial ports, so we can read
+        # them in parallel. On bi-arm + 3 cams the previous serial loop ran
+        # at ~13 Hz; running the two arms in threads is the cheap half of
+        # that fix (paired with pipelined per-arm motor reads).
+        results: dict[str, dict[str, Any]] = {}
+        errors: dict[str, BaseException] = {}
 
-        right_obs = self.right_arm.get_observation()
-        obs_dict.update({f"right_{key}": value for key, value in right_obs.items()})
+        def _read(side: str, arm) -> None:
+            try:
+                results[side] = arm.get_observation()
+            except BaseException as e:
+                errors[side] = e
+
+        t_left = Thread(target=_read, args=("left", self.left_arm), name="BiDK1Follower-read-left")
+        t_right = Thread(target=_read, args=("right", self.right_arm), name="BiDK1Follower-read-right")
+        t_left.start(); t_right.start()
+        t_left.join(); t_right.join()
+
+        if errors:
+            # Re-raise the first error to surface it; the record loop expects
+            # a clean exception path on hardware faults.
+            side, exc = next(iter(errors.items()))
+            raise RuntimeError(f"BiDK1Follower {side} arm get_observation failed: {exc}") from exc
+
+        obs_dict: dict[str, Any] = {}
+        obs_dict.update({f"left_{k}": v for k, v in results["left"].items()})
+        obs_dict.update({f"right_{k}": v for k, v in results["right"].items()})
 
         for cam_key, cam in self.cameras.items():
             start = time.perf_counter()
@@ -141,11 +162,29 @@ class BiDK1Follower(Robot):
             key.removeprefix("right_"): value for key, value in action.items() if key.startswith("right_")
         }
 
-        send_action_left = self.left_arm.send_action(left_action)
-        send_action_right = self.right_arm.send_action(right_action)
+        # Run send_action on both arms in parallel as well -- they each
+        # serialize over their own port, so threading roughly halves the
+        # write phase of the record/teleop loop too.
+        results: dict[str, dict[str, Any]] = {}
+        errors: dict[str, BaseException] = {}
 
-        prefixed_send_action_left = {f"left_{key}": value for key, value in send_action_left.items()}
-        prefixed_send_action_right = {f"right_{key}": value for key, value in send_action_right.items()}
+        def _send(side: str, arm, act) -> None:
+            try:
+                results[side] = arm.send_action(act)
+            except BaseException as e:
+                errors[side] = e
+
+        t_left = Thread(target=_send, args=("left", self.left_arm, left_action), name="BiDK1Follower-send-left")
+        t_right = Thread(target=_send, args=("right", self.right_arm, right_action), name="BiDK1Follower-send-right")
+        t_left.start(); t_right.start()
+        t_left.join(); t_right.join()
+
+        if errors:
+            side, exc = next(iter(errors.items()))
+            raise RuntimeError(f"BiDK1Follower {side} arm send_action failed: {exc}") from exc
+
+        prefixed_send_action_left = {f"left_{key}": value for key, value in results["left"].items()}
+        prefixed_send_action_right = {f"right_{key}": value for key, value in results["right"].items()}
 
         return {**prefixed_send_action_left, **prefixed_send_action_right}
 

@@ -248,6 +248,74 @@ class MotorControl:
             CMD = packet[1]
             self.__process_packet(data, CANID, CMD)
 
+    def pipelined_refresh(self, motors, timeout_s: float = 0.025, poll_s: float = 0.0005):
+        """Pipelined batched read of motor states.
+
+        Sends a refresh request for every motor in ``motors`` back-to-back,
+        then drains the serial buffer until every motor's reply has been
+        observed (matched by SlaveID/MasterID inside __process_packet) or
+        ``timeout_s`` elapses.
+
+        This is functionally equivalent to looping ``refresh_motor_status``
+        on each motor, but avoids the round-trip-per-motor latency that the
+        sequential implementation incurs because ``recv()`` is non-blocking.
+
+        Returns the number of motors whose state was successfully refreshed.
+        """
+        from time import perf_counter, sleep as _sleep
+
+        motors = list(motors)
+        if not motors:
+            return 0
+
+        # Drop any leftover stale bytes from a previous non-blocking recv()
+        # so we only count fresh replies for this batch.
+        try:
+            self.serial_.reset_input_buffer()
+        except Exception:
+            # read_all() acts as a fallback drain on backends without that hook
+            self.serial_.read_all()
+        self.data_save = bytes()
+
+        # Snapshot positions to detect which motors actually replied. We treat
+        # a position-change OR a timestamp tick as "got a fresh frame". To keep
+        # things simple and protocol-agnostic, just count how many distinct
+        # SlaveIDs we observe in the replies.
+        wanted_ids = {m.SlaveID for m in motors}
+        seen_ids = set()
+
+        # Send all requests back-to-back.
+        for motor in motors:
+            can_id_l = motor.SlaveID & 0xff
+            can_id_h = (motor.SlaveID >> 8) & 0xff
+            data_buf = np.array(
+                [np.uint8(can_id_l), np.uint8(can_id_h), 0xCC, 0x00, 0x00, 0x00, 0x00, 0x00],
+                np.uint8,
+            )
+            self.__send_data(0x7FF, data_buf)
+
+        # Drain replies until all motors heard from or timeout.
+        deadline = perf_counter() + timeout_s
+        while perf_counter() < deadline and seen_ids != wanted_ids:
+            chunk = self.serial_.read_all()
+            if chunk:
+                data_recv = b''.join([self.data_save, chunk])
+                packets = self.__extract_packets(data_recv)
+                for packet in packets:
+                    data = packet[7:15]
+                    CANID = (packet[6] << 24) | (packet[5] << 16) | (packet[4] << 8) | packet[3]
+                    CMD = packet[1]
+                    self.__process_packet(data, CANID, CMD)
+                    # Match either Slave or Master responding
+                    for m in motors:
+                        if CANID == m.SlaveID or CANID == m.MasterID:
+                            seen_ids.add(m.SlaveID)
+                            break
+            else:
+                _sleep(poll_s)
+
+        return len(seen_ids)
+
     def recv_set_param_data(self):
         data_recv = self.serial_.read_all()
         packets = self.__extract_packets(data_recv)

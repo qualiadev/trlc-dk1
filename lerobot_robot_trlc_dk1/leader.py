@@ -46,12 +46,18 @@ class DK1Leader(Teleoperator):
         self.bus = DynamixelMotorsBus(
             port=self.config.port,
             motors={
-                "joint_1": Motor(1, "xl330-m077", MotorNormMode.DEGREES),
-                "joint_2": Motor(2, "xl330-m077", MotorNormMode.DEGREES),
+                # Hardware mapping after 2026-04-28 leader rebuild:
+                # Probed both leader buses (/dev/ttyACM0 and /dev/ttyACM2) at
+                # 1 Mbaud and got identical model numbers per ID:
+                #   id 1,2,5,6 -> 1200 (xl330-m288)
+                #   id 3,4,7   -> 1190 (xl330-m077)
+                # i.e. m077 / m288 are flipped relative to the previous config.
+                "joint_1": Motor(1, "xl330-m288", MotorNormMode.DEGREES),
+                "joint_2": Motor(2, "xl330-m288", MotorNormMode.DEGREES),
                 "joint_3": Motor(3, "xl330-m077", MotorNormMode.DEGREES),
                 "joint_4": Motor(4, "xl330-m077", MotorNormMode.DEGREES),
-                "joint_5": Motor(5, "xl330-m077", MotorNormMode.DEGREES),
-                "joint_6": Motor(6, "xl330-m077", MotorNormMode.DEGREES),
+                "joint_5": Motor(5, "xl330-m288", MotorNormMode.DEGREES),
+                "joint_6": Motor(6, "xl330-m288", MotorNormMode.DEGREES),
                 "gripper": Motor(7, "xl330-m077", MotorNormMode.DEGREES),
             },
         )
