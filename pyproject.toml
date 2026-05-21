@@ -14,7 +14,7 @@ dependencies = [
   "numpy>=2.0.1,<2.3.0",
   "pyserial>=3.5",
   "dynamixel-sdk>=3.7.31",
-  "lerobot[dynamixel,viz]@git+https://github.com/mQualia/lerobot.git@f75d627dd78732cd1dc5e6c6cadc0cccc081c025",
+  "lerobot[dynamixel,viz]@git+https://github.com/mQualia/lerobot.git@94ec5c28165580f8362b190a8d2616aaf2ba627c",
   "mujoco>=3.0.0",
   # ── Torch w/ CUDA 13 (Jetson Thor, sm_110) ──
   # Pinned to the same patch versions that ship as +cu130 wheels on
