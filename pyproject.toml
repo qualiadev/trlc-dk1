@@ -24,7 +24,7 @@ dependencies = [
   # it for the lerobot-record foot-pedal pause/resume feature; without it the
   # pedal listener thread just doesn't start and presses are ignored.
   "evdev>=1.7.1",
-  "lerobot[dynamixel,viz]@git+https://github.com/mQualia/lerobot.git@5976c84cd73ee225f45185fa12b6b23d34d20ffc",
+  "lerobot[dynamixel,viz]@git+https://github.com/mQualia/lerobot.git@025a7677c5514fa9856c07ed644dc49f4e6ddc0b",
   "mujoco>=3.0.0",
   # ── Torch w/ CUDA 13 (Jetson Thor, sm_110) ──
   # Pinned to the same patch versions that ship as +cu130 wheels on
