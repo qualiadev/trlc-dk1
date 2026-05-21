@@ -7,11 +7,48 @@ name = "lerobot_robot_trlc_dk1"
 version = "0.3.0"
 requires-python = ">=3.12"
 dependencies = [
-  "numpy>=2.0.1",
+  # ── Core plugin deps ──
+  # numpy: pinned implicitly via lerobot (numpy<2.3.0,>=2.0.0).
+  # The deprecated venv ran 2.4.3 via a force-install bypass; we don't
+  # need to reproduce that out-of-band hack here.
+  "numpy>=2.0.1,<2.3.0",
   "pyserial>=3.5",
   "dynamixel-sdk>=3.7.31",
-  "lerobot[dynamixel,viz]@git+https://github.com/mQualia/lerobot.git@f27917d3100654c657533160f5f83c082ff63dc7",
+  "lerobot[dynamixel,viz]@git+https://github.com/mQualia/lerobot.git@f75d627dd78732cd1dc5e6c6cadc0cccc081c025",
   "mujoco>=3.0.0",
+  # ── Torch w/ CUDA 13 (Jetson Thor, sm_110) ──
+  # Pinned to the same patch versions that ship as +cu130 wheels on
+  # download.pytorch.org. The [tool.uv.sources] block below redirects these
+  # to the cu130 index so `uv sync` keeps GPU torch.
+  "torch==2.10.0",
+  "torchvision==0.25.0",
+  # ── DepthAI (head camera on Jetson Thor) ──
+  # Not on PyPI in a way uv resolves cleanly without help; pinned exactly
+  # to the version that worked in deprecated venv.
+  "depthai==3.5.0",
+  # ── Inference / model loading ──
+  "transformers==5.3.0",
+  "accelerate==1.13.0",
+  "safetensors>=0.6",
+  "huggingface_hub>=0.36",
+  "einops>=0.8",
+  # ── Numerics / signal processing ──
+  "scipy==1.17.1",
+  # ── Video / image IO ──
+  "av==15.1.0",
+  "imageio==2.37.3",
+  "opencv-python-headless>=4.13",
+  # ── Datasets / visualization ──
+  "datasets==4.8.5",
+  "rerun-sdk==0.26.2",
+
+  # ── Async inference / gRPC transport (lerobot.async_inference) ──
+  # lerobot.transport.services_pb2 imports `from google.protobuf ...`.
+  # The `google` namespace package is provided by `protobuf`, NOT by the
+  # PyPI meta-package called `google` (which is empty). protobuf must be
+  # >=6.31.0 per services_pb2's runtime_version check.
+  "protobuf>=6.31.0",
+  "grpcio>=1.80.0",
 ]
 
 authors = [
@@ -27,3 +64,22 @@ Documentation = "https://www.docs.robot-learning.co/"
 
 [tool.hatch.metadata]
 allow-direct-references = true
+
+# ────────────────────────────────────────────────────────────────────
+# uv-specific configuration
+# ────────────────────────────────────────────────────────────────────
+# Redirect torch + torchvision to the CUDA 13 index. This is the
+# mechanism that prevents `uv sync` from reverting to the CPU wheel
+# on PyPI. Without it, the cu130 build gets uninstalled on every
+# `uv sync`.
+#
+# Reference: https://docs.astral.sh/uv/guides/integration/pytorch/
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cu130", marker = "platform_machine == 'aarch64' or platform_machine == 'x86_64'" }]
+torchvision = [{ index = "pytorch-cu130", marker = "platform_machine == 'aarch64' or platform_machine == 'x86_64'" }]

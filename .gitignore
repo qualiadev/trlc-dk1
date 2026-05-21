@@ -216,3 +216,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+# Local-only artifacts (added 2026-05-21)
+uv.lock
+outputs/
+*.bak.before_*
+*.bak
