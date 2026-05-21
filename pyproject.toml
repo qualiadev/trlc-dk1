@@ -20,7 +20,11 @@ dependencies = [
   # plugin imports the robot constructor directly so the extra is never pulled in.
   # Pin matches lerobot's constraint (>=7.0.1,<9.0.0).
   "deepdiff>=8.6.2,<9.0.0",
-  "lerobot[dynamixel,viz]@git+https://github.com/mQualia/lerobot.git@94ec5c28165580f8362b190a8d2616aaf2ba627c",
+  # evdev: optional in lerobot.utils.pedal (silently no-ops if missing).  We need
+  # it for the lerobot-record foot-pedal pause/resume feature; without it the
+  # pedal listener thread just doesn't start and presses are ignored.
+  "evdev>=1.7.1",
+  "lerobot[dynamixel,viz]@git+https://github.com/mQualia/lerobot.git@96ed8b7ec5ede933eeafbe8016498752971b1d8a",
   "mujoco>=3.0.0",
   # ── Torch w/ CUDA 13 (Jetson Thor, sm_110) ──
   # Pinned to the same patch versions that ship as +cu130 wheels on
