@@ -14,6 +14,12 @@ dependencies = [
   "numpy>=2.0.1,<2.3.0",
   "pyserial>=3.5",
   "dynamixel-sdk>=3.7.31",
+  # deepdiff: required by lerobot.robots.utils._check_for_drift_in_attributes which
+  # runs on every Robot/Teleop config instantiation (including BiDK1LeaderConfig).
+  # Declared as an optional extra (`lerobot[deepdiff-dep]`) inside lerobot, but our
+  # plugin imports the robot constructor directly so the extra is never pulled in.
+  # Pin matches lerobot's constraint (>=7.0.1,<9.0.0).
+  "deepdiff>=8.6.2,<9.0.0",
   "lerobot[dynamixel,viz]@git+https://github.com/mQualia/lerobot.git@94ec5c28165580f8362b190a8d2616aaf2ba627c",
   "mujoco>=3.0.0",
   # ── Torch w/ CUDA 13 (Jetson Thor, sm_110) ──
