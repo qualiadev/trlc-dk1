@@ -158,10 +158,10 @@ class DK1Robot:
         """Return normalised gripper position and torque."""
         pos, _, torque = self._motor_chain.get_state()
         cfg = self._config
-        normalized = np.interp(
-            pos[6],
-            [cfg.gripper_open_pos, cfg.gripper_closed_pos],
-            [0.0, 1.0],
+        # Linear map open->0, closed->1.  np.interp can't be used here because it
+        # requires increasing xp, but gripper_open_pos > gripper_closed_pos.
+        normalized = (pos[6] - cfg.gripper_open_pos) / (
+            cfg.gripper_closed_pos - cfg.gripper_open_pos
         )
         return {"pos": float(np.clip(normalized, 0.0, 1.0)), "torque": float(torque[6])}
 
