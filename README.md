@@ -71,12 +71,11 @@ uv run lerobot-find-cameras
 uv run lerobot-teleoperate \
     --robot.type=dk1_follower \
     --robot.port=/dev/ttyACM0 \
-    --robot.joint_velocity_scaling=0.2 \
     --teleop.type=dk1_leader \
     --teleop.port=/dev/ttyACM1 \
     --robot.cameras="{ 
-        context: {type: opencv, index_or_path: 0, width: 1280, height: 720, fps: 60, fourcc: "MJPG"}, 
-        wrist: {type: opencv, index_or_path: 1, width: 1280, height: 720, fps: 60, rotation: 180, fourcc: "MJPG"}
+        context: {type: opencv, index_or_path: 0, width: 960, height: 540, fps: 60, fourcc: "YUY2"}, 
+        wrist: {type: opencv, index_or_path: 1, width: 960, height: 540, fps: 60, rotation: 180, fourcc: "YUY2"}
       }" \
     --display_data=true
 ```
@@ -91,14 +90,13 @@ lerobot-record \
     --robot.type=bi_dk1_follower \
     --robot.right_arm_port=/dev/ttyACM0 \
     --robot.left_arm_port=/dev/ttyACM1 \
-    --robot.joint_velocity_scaling=1.0 \
     --teleop.type=bi_dk1_leader \
     --teleop.right_arm_port=/dev/ttyACM2 \
     --teleop.left_arm_port=/dev/ttyACM3 \
     --robot.cameras="{ 
-        head: {type: opencv, index_or_path: /dev/video0, width: 960, height: 540, fps: 60, fourcc: "MJPG"},
-        right_wrist: {type: opencv, index_or_path: /dev/video2, width: 960, height: 540, fps: 60, rotation: 180, fourcc: "MJPG"},
-        left_wrist: {type: opencv, index_or_path: /dev/video4, width: 960, height: 540, fps: 60, rotation: 180, fourcc: "MJPG"},
+        head: {type: opencv, index_or_path: /dev/video0, width: 960, height: 540, fps: 60, fourcc: "YUY2"},
+        right_wrist: {type: opencv, index_or_path: /dev/video2, width: 960, height: 540, fps: 60, rotation: 180, fourcc: "YUY2"},
+        left_wrist: {type: opencv, index_or_path: /dev/video4, width: 960, height: 540, fps: 60, rotation: 180, fourcc: "YUY2"},
       }" \
     --dataset.repo_id=$USER/my_test_dataset \
     --dataset.push_to_hub=false \
