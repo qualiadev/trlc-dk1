@@ -46,10 +46,8 @@ Copyright 2025-2026 The Robot Learning Company UG (haftungsbeschränkt). All rig
 ```
 git clone https://github.com/robot-learning-co/trlc-dk1.git
 uv venv
-GIT_LFS_SKIP_SMUDGE=1 uv pip install -e .
+uv pip install -e .
 ```
-GIT_LFS_SKIP_SMUDGE=1 is needed to pull LeRobot as a dependency.
-
 
 This repo uses [LeRobot's plugin conventions](https://huggingface.co/docs/lerobot/integrate_hardware#using-your-own-lerobot-devices-) to be automatically detected by a LeRobot installation in the same Python environment.
 
