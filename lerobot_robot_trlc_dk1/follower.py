@@ -139,6 +139,7 @@ class DK1Follower(Robot):
             from trlc_dk1_control import DK1Robot, DK1_DEFAULT_CONFIG
             cfg = DK1_DEFAULT_CONFIG(self.config.port)
             cfg.max_gripper_torque_nm = self.config.max_gripper_torque
+            cfg.gripper_closed_pos = self.config.gripper_closed_pos
             self._robot = DK1Robot(cfg)
             self._robot.connect()
         else:
