@@ -44,9 +44,12 @@ class BiDK1FollowerConfig(RobotConfig):
     max_gripper_torque: float = 1.0 # Nm (/0.00875m spur gear radius = 114N gripper force)
     # Per-arm gripper closed positions (rad, negative — see DK1FollowerConfig).
     # Gripper assemblies differ between arms; measure each with
-    # examples/calibrate_gripper.py.
-    left_gripper_closed_pos: float = -4.7
-    right_gripper_closed_pos: float = -4.7
+    # examples/calibrate_gripper.py.  Defaults measured on the Qualia dual-arm
+    # rig 2026-06-11 (squeeze-by-hand to hard stop, min raw position).
+    left_gripper_closed_pos: float = -5.094
+    right_gripper_closed_pos: float = -5.0948
+    # Control mode forwarded to both arms ("impedance" | "pos_vel").
+    control_mode: str = "impedance"
     cameras: dict[str, CameraConfig] = field(default_factory=dict)
 
 
@@ -69,6 +72,7 @@ class BiDK1Follower(Robot):
             joint_velocity_scaling=self.config.joint_velocity_scaling,
             max_gripper_torque=self.config.max_gripper_torque,
             gripper_closed_pos=self.config.left_gripper_closed_pos,
+            control_mode=self.config.control_mode,
         )
         right_arm_config = DK1FollowerConfig(
             port=self.config.right_arm_port,
@@ -76,6 +80,7 @@ class BiDK1Follower(Robot):
             joint_velocity_scaling=self.config.joint_velocity_scaling,
             max_gripper_torque=self.config.max_gripper_torque,
             gripper_closed_pos=self.config.right_gripper_closed_pos,
+            control_mode=self.config.control_mode,
         )
         
         self.left_arm = DK1Follower(left_arm_config)
