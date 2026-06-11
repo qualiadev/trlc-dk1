@@ -89,8 +89,14 @@ class BiDK1Follower(Robot):
 
     @property
     def _motors_ft(self) -> dict[str, type]:
-        return {f"left_{motor}.pos": float for motor in self.left_arm.motors} | {
-            f"right_{motor}.pos": float for motor in self.right_arm.motors
+        # Derive from the single-arm action_features (joint_1..6 + gripper).
+        # NOTE: upstream's impedance rewrite renamed DK1Follower.motors to
+        # the private, connect-time-only `_motors`, which broke this property
+        # (AttributeError before connect).  action_features is static and
+        # available pre-connect, which observation_features needs (dataset
+        # schema is built before the robot connects).
+        return {f"left_{key}": float for key in self.left_arm.action_features} | {
+            f"right_{key}": float for key in self.right_arm.action_features
         }
 
     @property
