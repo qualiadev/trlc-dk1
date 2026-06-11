@@ -24,7 +24,7 @@ dependencies = [
   # it for the lerobot-record foot-pedal pause/resume feature; without it the
   # pedal listener thread just doesn't start and presses are ignored.
   "evdev>=1.7.1",
-  "lerobot[dynamixel,viz]@git+https://github.com/qualiadev/lerobot.git@439f6aaed219731a569b49e7a87dbabd7cd1a84b",
+  "lerobot[dynamixel,viz]@git+https://github.com/qualiadev/lerobot.git@ed4157edb365d4213fdafa282b0db39552a9b4a2",
   "mujoco>=3.0.0",
   # ── Torch w/ CUDA 13 (Jetson Thor, sm_110) ──
   # Pinned to the same patch versions that ship as +cu130 wheels on
@@ -90,6 +90,11 @@ name = "pytorch-cu130"
 url = "https://download.pytorch.org/whl/cu130"
 explicit = true
 
+# Marker is aarch64-ONLY and must stay disjoint from the lerobot fork's
+# torch source (cu128, linux+x86_64): uv refuses to resolve when two
+# sources claim the same package in an overlapping environment split
+# ("conflicting indexes for package torch").  cu130 is required on Jetson
+# Thor (sm_110); x86_64 hosts get cu128 via the lerobot fork's index.
 [tool.uv.sources]
-torch = [{ index = "pytorch-cu130", marker = "platform_machine == 'aarch64' or platform_machine == 'x86_64'" }]
-torchvision = [{ index = "pytorch-cu130", marker = "platform_machine == 'aarch64' or platform_machine == 'x86_64'" }]
+torch = [{ index = "pytorch-cu130", marker = "platform_machine == 'aarch64'" }]
+torchvision = [{ index = "pytorch-cu130", marker = "platform_machine == 'aarch64'" }]
