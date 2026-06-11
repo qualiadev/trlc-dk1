@@ -48,8 +48,9 @@ class BiDK1FollowerConfig(RobotConfig):
     # rig 2026-06-11 (squeeze-by-hand to hard stop, min raw position).
     left_gripper_closed_pos: float = -5.094
     right_gripper_closed_pos: float = -5.0948
-    # Control mode forwarded to both arms ("impedance" | "pos_vel").
-    control_mode: str = "impedance"
+    # Control mode forwarded to both arms ("pos_vel" | "impedance").
+    # pos_vel default — see DK1FollowerConfig.control_mode.
+    control_mode: str = "pos_vel"
     cameras: dict[str, CameraConfig] = field(default_factory=dict)
 
 
