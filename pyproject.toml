@@ -37,7 +37,12 @@ dependencies = [
   # to the version that worked in deprecated venv.
   "depthai==3.5.0",
   # ── Inference / model loading ──
-  "transformers==5.3.0",
+  # transformers must match the lerobot fork's transformers-dep extra
+  # (>=5.4,<5.6).  With huggingface_hub >=1.19, lerobot's GR00T policy
+  # applies @strict to PretrainedConfig subclasses, and PretrainedConfig
+  # only became a dataclass in transformers 5.4 — 5.3 crashes at import
+  # with "GR00TN15Config must be a dataclass before applying @strict".
+  "transformers>=5.4.0,<5.6.0",
   "accelerate==1.13.0",
   "safetensors>=0.6",
   "huggingface_hub>=0.36",
