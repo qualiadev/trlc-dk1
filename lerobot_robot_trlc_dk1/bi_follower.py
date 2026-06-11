@@ -42,6 +42,11 @@ class BiDK1FollowerConfig(RobotConfig):
     disable_torque_on_disconnect: bool = False
     joint_velocity_scaling: float = 0.2
     max_gripper_torque: float = 1.0 # Nm (/0.00875m spur gear radius = 114N gripper force)
+    # Per-arm gripper closed positions (rad, negative — see DK1FollowerConfig).
+    # Gripper assemblies differ between arms; measure each with
+    # examples/calibrate_gripper.py.
+    left_gripper_closed_pos: float = -4.7
+    right_gripper_closed_pos: float = -4.7
     cameras: dict[str, CameraConfig] = field(default_factory=dict)
 
 
@@ -63,12 +68,14 @@ class BiDK1Follower(Robot):
             disable_torque_on_disconnect=self.config.disable_torque_on_disconnect,
             joint_velocity_scaling=self.config.joint_velocity_scaling,
             max_gripper_torque=self.config.max_gripper_torque,
+            gripper_closed_pos=self.config.left_gripper_closed_pos,
         )
         right_arm_config = DK1FollowerConfig(
             port=self.config.right_arm_port,
             disable_torque_on_disconnect=self.config.disable_torque_on_disconnect,
             joint_velocity_scaling=self.config.joint_velocity_scaling,
             max_gripper_torque=self.config.max_gripper_torque,
+            gripper_closed_pos=self.config.right_gripper_closed_pos,
         )
         
         self.left_arm = DK1Follower(left_arm_config)
