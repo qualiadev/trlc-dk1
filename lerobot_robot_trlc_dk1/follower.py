@@ -51,7 +51,11 @@ class DK1FollowerConfig(RobotConfig):
     port: str
     # "impedance" — MIT mode + gravity compensation (via trlc_dk1_control / DK1Robot)
     # "pos_vel"   — original POS_VEL mode with velocity scaling
-    control_mode: str = "impedance"
+    # "pos_vel" (the original firmware-side position/velocity control) is the
+    # default: tested smooth on the Qualia rig.  The impedance controller
+    # (upstream PR #18) was noticeably less smooth in dual-arm teleop
+    # (2026-06-11) — opt in explicitly with control_mode="impedance".
+    control_mode: str = "pos_vel"
     # Shared
     max_gripper_torque: float = 1.0         # Nm
     disable_torque_on_disconnect: bool = False
