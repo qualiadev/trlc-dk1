@@ -59,7 +59,9 @@ class DK1FollowerConfig(RobotConfig):
     # OPEN is always 0.0: on connect the gripper drives open until it hits the
     # hard stop and the motor is zeroed there.  Closed is therefore negative.
     # Measure per arm with examples/calibrate_gripper.py — assemblies differ.
-    gripper_closed_pos: float = -4.7
+    # Default measured on the Qualia rig 2026-06-11 (both arms ~-5.09;
+    # upstream's previous hardcoded value was -4.7).
+    gripper_closed_pos: float = -5.094
     cameras: dict[str, CameraConfig] = field(default_factory=dict)
     # POS_VEL mode only
     joint_velocity_scaling: float = 0.2
