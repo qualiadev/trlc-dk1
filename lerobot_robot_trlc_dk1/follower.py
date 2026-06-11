@@ -55,6 +55,11 @@ class DK1FollowerConfig(RobotConfig):
     # Shared
     max_gripper_torque: float = 1.0         # Nm
     disable_torque_on_disconnect: bool = False
+    # Raw motor position (rad) at which the gripper is fully CLOSED.
+    # OPEN is always 0.0: on connect the gripper drives open until it hits the
+    # hard stop and the motor is zeroed there.  Closed is therefore negative.
+    # Measure per arm with examples/calibrate_gripper.py — assemblies differ.
+    gripper_closed_pos: float = -4.7
     cameras: dict[str, CameraConfig] = field(default_factory=dict)
     # POS_VEL mode only
     joint_velocity_scaling: float = 0.2
@@ -90,7 +95,7 @@ class DK1Follower(Robot):
         self._motors = None             # dict[str, Motor] | None
         self._bus_connected = False
         self._gripper_open_pos = 0.0
-        self._gripper_closed_pos = -4.7
+        self._gripper_closed_pos = config.gripper_closed_pos
 
     # ------------------------------------------------------------------
     # LeRobot feature descriptors  (same keys for both modes)
